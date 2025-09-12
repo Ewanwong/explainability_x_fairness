@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+
+bash decoder_scripts/compute_sensitive_feature_reliance_race_test.sh
+bash decoder_scripts/compute_sensitive_feature_reliance_gender_test.sh
+bash decoder_scripts/compute_sensitive_feature_reliance_religion_test.sh
+
+# bash decoder_scripts/compute_sensitive_feature_reliance_race_val.sh
+# bash decoder_scripts/compute_sensitive_feature_reliance_gender_val.sh
+# bash decoder_scripts/compute_sensitive_feature_reliance_religion_val.sh
+
+bash decoder_scripts/compute_correlation_race_test.sh
+bash decoder_scripts/compute_correlation_gender_test.sh
+bash decoder_scripts/compute_correlation_religion_test.sh
+
+# bash decoder_scripts/compute_correlation_race_val.sh
+# bash decoder_scripts/compute_correlation_gender_val.sh
+# bash decoder_scripts/compute_correlation_religion_val.sh
+
+# bash decoder_scripts/model_selection_race.sh
+# bash decoder_scripts/model_selection_gender.sh
+# bash decoder_scripts/model_selection_religion.sh

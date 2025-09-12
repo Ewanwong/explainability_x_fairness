@@ -1,0 +1,436 @@
+#!/bin/bash
+python -m model_selection.debiasing_preprocessing \
+    --model_name_or_path="bert-base-uncased" \
+    --dataset_name="google/jigsaw_unintended_bias" \
+    --num_labels=2 \
+    --output_dir="/scratch/yifwang/new_fairness_x_explainability/new_debiased_models_jigsaw/bert_jigsaw_all" \
+    --batch_size=8 \
+    --max_seq_length=512 \
+    --learning_rate=2e-05 \
+    --warmup_steps_or_ratio=0.1 \
+    --num_train_epochs=5 \
+    --early_stopping_patience=-1 \
+    --eval_steps=1000 \
+    --save_steps=1000 \
+    --seed=42 \
+    --eval_metric="accuracy" \
+    --bias_type="race,gender,religion" \
+    --debiasing_method="no_debiasing" \
+    --total_num_examples=8000,8000,6300
+
+python -m model_selection.debiasing_preprocessing \
+    --model_name_or_path="bert-base-uncased" \
+    --dataset_name="google/jigsaw_unintended_bias" \
+    --num_labels=2 \
+    --output_dir="/scratch/yifwang/new_fairness_x_explainability/new_debiased_models_jigsaw/bert_jigsaw_all" \
+    --batch_size=8 \
+    --max_seq_length=512 \
+    --learning_rate=2e-05 \
+    --warmup_steps_or_ratio=0.1 \
+    --num_train_epochs=5 \
+    --early_stopping_patience=-1 \
+    --eval_steps=1000 \
+    --save_steps=1000 \
+    --seed=42 \
+    --eval_metric="accuracy" \
+    --bias_type="race,gender,religion" \
+    --debiasing_method="group_balance" \
+    --total_num_examples=8000,8000,6300
+
+python -m model_selection.debiasing_preprocessing \
+    --model_name_or_path="bert-base-uncased" \
+    --dataset_name="google/jigsaw_unintended_bias" \
+    --num_labels=2 \
+    --output_dir="/scratch/yifwang/new_fairness_x_explainability/new_debiased_models_jigsaw/bert_jigsaw_all" \
+    --batch_size=8 \
+    --max_seq_length=512 \
+    --learning_rate=2e-05 \
+    --warmup_steps_or_ratio=0.1 \
+    --num_train_epochs=5 \
+    --early_stopping_patience=-1 \
+    --eval_steps=1000 \
+    --save_steps=1000 \
+    --seed=42 \
+    --eval_metric="accuracy" \
+    --bias_type="race,gender,religion" \
+    --debiasing_method="group_class_balance" \
+    --total_num_examples=8000,8000,6300
+
+python -m model_selection.debiasing_preprocessing \
+    --model_name_or_path="bert-base-uncased" \
+    --dataset_name="google/jigsaw_unintended_bias" \
+    --num_labels=2 \
+    --output_dir="/scratch/yifwang/new_fairness_x_explainability/new_debiased_models_jigsaw/bert_jigsaw_all" \
+    --batch_size=8 \
+    --max_seq_length=512 \
+    --learning_rate=2e-05 \
+    --warmup_steps_or_ratio=0.1 \
+    --num_train_epochs=5 \
+    --early_stopping_patience=-1 \
+    --eval_steps=1000 \
+    --save_steps=1000 \
+    --seed=42 \
+    --eval_metric="accuracy" \
+    --bias_type="race,gender,religion" \
+    --debiasing_method="cda" \
+    --total_num_examples=8000,8000,6300
+
+python -m model_selection.debiasing_inprocessing \
+    --model_name_or_path="bert-base-uncased" \
+    --dataset_name="google/jigsaw_unintended_bias" \
+    --num_labels=2 \
+    --output_dir="/scratch/yifwang/new_fairness_x_explainability/new_debiased_models_jigsaw/bert_jigsaw_all" \
+    --batch_size=8 \
+    --max_seq_length=512 \
+    --learning_rate=2e-05 \
+    --warmup_steps_or_ratio=0.1 \
+    --num_train_epochs=5 \
+    --early_stopping_patience=-1 \
+    --eval_steps=1000 \
+    --save_steps=1000 \
+    --seed=42 \
+    --eval_metric="accuracy" \
+    --bias_type="race,gender,religion" \
+    --debiasing_method="dropout" \
+    --total_num_examples=8000,8000,6300\
+    --entropy_weight=0.1 \
+    --causal_debias_weight=0.5 \
+    --hidden_dropout_prob=0.2 \
+    --attention_dropout_prob=0.15 
+
+python -m model_selection.debiasing_inprocessing \
+    --model_name_or_path="bert-base-uncased" \
+    --dataset_name="google/jigsaw_unintended_bias" \
+    --num_labels=2 \
+    --output_dir="/scratch/yifwang/new_fairness_x_explainability/new_debiased_models_jigsaw/bert_jigsaw_all" \
+    --batch_size=8 \
+    --max_seq_length=512 \
+    --learning_rate=2e-05 \
+    --warmup_steps_or_ratio=0.1 \
+    --num_train_epochs=5 \
+    --early_stopping_patience=-1 \
+    --eval_steps=1000 \
+    --save_steps=1000 \
+    --seed=42 \
+    --eval_metric="accuracy" \
+    --bias_type="race,gender,religion" \
+    --debiasing_method="attention_entropy" \
+    --total_num_examples=8000,8000,6300\
+    --entropy_weight=0.1 \
+    --causal_debias_weight=0.5 \
+    --hidden_dropout_prob=0.2 \
+    --attention_dropout_prob=0.15 
+
+python -m model_selection.debiasing_inprocessing \
+    --model_name_or_path="bert-base-uncased" \
+    --dataset_name="google/jigsaw_unintended_bias" \
+    --num_labels=2 \
+    --output_dir="/scratch/yifwang/new_fairness_x_explainability/new_debiased_models_jigsaw/bert_jigsaw_all" \
+    --batch_size=8 \
+    --max_seq_length=512 \
+    --learning_rate=2e-05 \
+    --warmup_steps_or_ratio=0.1 \
+    --num_train_epochs=5 \
+    --early_stopping_patience=-1 \
+    --eval_steps=1000 \
+    --save_steps=1000 \
+    --seed=42 \
+    --eval_metric="accuracy" \
+    --bias_type="race,gender,religion" \
+    --debiasing_method="causal_debias" \
+    --total_num_examples=8000,8000,6300\
+    --entropy_weight=0.1 \
+    --causal_debias_weight=0.5 \
+    --hidden_dropout_prob=0.2 \
+    --attention_dropout_prob=0.15 
+
+python -m model_selection.debiasing_preprocessing \
+    --model_name_or_path="FacebookAI/roberta-base" \
+    --dataset_name="google/jigsaw_unintended_bias" \
+    --num_labels=2 \
+    --output_dir="/scratch/yifwang/new_fairness_x_explainability/new_debiased_models_jigsaw/roberta_jigsaw_all" \
+    --batch_size=8 \
+    --max_seq_length=512 \
+    --learning_rate=2e-05 \
+    --warmup_steps_or_ratio=0.1 \
+    --num_train_epochs=5 \
+    --early_stopping_patience=-1 \
+    --eval_steps=1000 \
+    --save_steps=1000 \
+    --seed=42 \
+    --eval_metric="accuracy" \
+    --bias_type="race,gender,religion" \
+    --debiasing_method="no_debiasing" \
+    --total_num_examples=8000,8000,6300
+
+python -m model_selection.debiasing_preprocessing \
+    --model_name_or_path="FacebookAI/roberta-base" \
+    --dataset_name="google/jigsaw_unintended_bias" \
+    --num_labels=2 \
+    --output_dir="/scratch/yifwang/new_fairness_x_explainability/new_debiased_models_jigsaw/roberta_jigsaw_all" \
+    --batch_size=8 \
+    --max_seq_length=512 \
+    --learning_rate=2e-05 \
+    --warmup_steps_or_ratio=0.1 \
+    --num_train_epochs=5 \
+    --early_stopping_patience=-1 \
+    --eval_steps=1000 \
+    --save_steps=1000 \
+    --seed=42 \
+    --eval_metric="accuracy" \
+    --bias_type="race,gender,religion" \
+    --debiasing_method="group_balance" \
+    --total_num_examples=8000,8000,6300
+
+python -m model_selection.debiasing_preprocessing \
+    --model_name_or_path="FacebookAI/roberta-base" \
+    --dataset_name="google/jigsaw_unintended_bias" \
+    --num_labels=2 \
+    --output_dir="/scratch/yifwang/new_fairness_x_explainability/new_debiased_models_jigsaw/roberta_jigsaw_all" \
+    --batch_size=8 \
+    --max_seq_length=512 \
+    --learning_rate=2e-05 \
+    --warmup_steps_or_ratio=0.1 \
+    --num_train_epochs=5 \
+    --early_stopping_patience=-1 \
+    --eval_steps=1000 \
+    --save_steps=1000 \
+    --seed=42 \
+    --eval_metric="accuracy" \
+    --bias_type="race,gender,religion" \
+    --debiasing_method="group_class_balance" \
+    --total_num_examples=8000,8000,6300
+
+python -m model_selection.debiasing_preprocessing \
+    --model_name_or_path="FacebookAI/roberta-base" \
+    --dataset_name="google/jigsaw_unintended_bias" \
+    --num_labels=2 \
+    --output_dir="/scratch/yifwang/new_fairness_x_explainability/new_debiased_models_jigsaw/roberta_jigsaw_all" \
+    --batch_size=8 \
+    --max_seq_length=512 \
+    --learning_rate=2e-05 \
+    --warmup_steps_or_ratio=0.1 \
+    --num_train_epochs=5 \
+    --early_stopping_patience=-1 \
+    --eval_steps=1000 \
+    --save_steps=1000 \
+    --seed=42 \
+    --eval_metric="accuracy" \
+    --bias_type="race,gender,religion" \
+    --debiasing_method="cda" \
+    --total_num_examples=8000,8000,6300
+
+python -m model_selection.debiasing_inprocessing \
+    --model_name_or_path="FacebookAI/roberta-base" \
+    --dataset_name="google/jigsaw_unintended_bias" \
+    --num_labels=2 \
+    --output_dir="/scratch/yifwang/new_fairness_x_explainability/new_debiased_models_jigsaw/roberta_jigsaw_all" \
+    --batch_size=8 \
+    --max_seq_length=512 \
+    --learning_rate=2e-05 \
+    --warmup_steps_or_ratio=0.1 \
+    --num_train_epochs=5 \
+    --early_stopping_patience=-1 \
+    --eval_steps=1000 \
+    --save_steps=1000 \
+    --seed=42 \
+    --eval_metric="accuracy" \
+    --bias_type="race,gender,religion" \
+    --debiasing_method="dropout" \
+    --total_num_examples=8000,8000,6300\
+    --entropy_weight=0.1 \
+    --causal_debias_weight=0.5 \
+    --hidden_dropout_prob=0.2 \
+    --attention_dropout_prob=0.15 
+
+python -m model_selection.debiasing_inprocessing \
+    --model_name_or_path="FacebookAI/roberta-base" \
+    --dataset_name="google/jigsaw_unintended_bias" \
+    --num_labels=2 \
+    --output_dir="/scratch/yifwang/new_fairness_x_explainability/new_debiased_models_jigsaw/roberta_jigsaw_all" \
+    --batch_size=8 \
+    --max_seq_length=512 \
+    --learning_rate=2e-05 \
+    --warmup_steps_or_ratio=0.1 \
+    --num_train_epochs=5 \
+    --early_stopping_patience=-1 \
+    --eval_steps=1000 \
+    --save_steps=1000 \
+    --seed=42 \
+    --eval_metric="accuracy" \
+    --bias_type="race,gender,religion" \
+    --debiasing_method="attention_entropy" \
+    --total_num_examples=8000,8000,6300\
+    --entropy_weight=0.1 \
+    --causal_debias_weight=0.5 \
+    --hidden_dropout_prob=0.2 \
+    --attention_dropout_prob=0.15 
+
+python -m model_selection.debiasing_inprocessing \
+    --model_name_or_path="FacebookAI/roberta-base" \
+    --dataset_name="google/jigsaw_unintended_bias" \
+    --num_labels=2 \
+    --output_dir="/scratch/yifwang/new_fairness_x_explainability/new_debiased_models_jigsaw/roberta_jigsaw_all" \
+    --batch_size=8 \
+    --max_seq_length=512 \
+    --learning_rate=2e-05 \
+    --warmup_steps_or_ratio=0.1 \
+    --num_train_epochs=5 \
+    --early_stopping_patience=-1 \
+    --eval_steps=1000 \
+    --save_steps=1000 \
+    --seed=42 \
+    --eval_metric="accuracy" \
+    --bias_type="race,gender,religion" \
+    --debiasing_method="causal_debias" \
+    --total_num_examples=8000,8000,6300\
+    --entropy_weight=0.1 \
+    --causal_debias_weight=0.5 \
+    --hidden_dropout_prob=0.2 \
+    --attention_dropout_prob=0.15 
+
+python -m model_selection.debiasing_preprocessing \
+    --model_name_or_path="distilbert/distilbert-base-uncased" \
+    --dataset_name="google/jigsaw_unintended_bias" \
+    --num_labels=2 \
+    --output_dir="/scratch/yifwang/new_fairness_x_explainability/new_debiased_models_jigsaw/distilbert_jigsaw_all" \
+    --batch_size=8 \
+    --max_seq_length=512 \
+    --learning_rate=2e-05 \
+    --warmup_steps_or_ratio=0.1 \
+    --num_train_epochs=5 \
+    --early_stopping_patience=-1 \
+    --eval_steps=1000 \
+    --save_steps=1000 \
+    --seed=42 \
+    --eval_metric="accuracy" \
+    --bias_type="race,gender,religion" \
+    --debiasing_method="no_debiasing" \
+    --total_num_examples=8000,8000,6300
+
+python -m model_selection.debiasing_preprocessing \
+    --model_name_or_path="distilbert/distilbert-base-uncased" \
+    --dataset_name="google/jigsaw_unintended_bias" \
+    --num_labels=2 \
+    --output_dir="/scratch/yifwang/new_fairness_x_explainability/new_debiased_models_jigsaw/distilbert_jigsaw_all" \
+    --batch_size=8 \
+    --max_seq_length=512 \
+    --learning_rate=2e-05 \
+    --warmup_steps_or_ratio=0.1 \
+    --num_train_epochs=5 \
+    --early_stopping_patience=-1 \
+    --eval_steps=1000 \
+    --save_steps=1000 \
+    --seed=42 \
+    --eval_metric="accuracy" \
+    --bias_type="race,gender,religion" \
+    --debiasing_method="group_balance" \
+    --total_num_examples=8000,8000,6300
+
+python -m model_selection.debiasing_preprocessing \
+    --model_name_or_path="distilbert/distilbert-base-uncased" \
+    --dataset_name="google/jigsaw_unintended_bias" \
+    --num_labels=2 \
+    --output_dir="/scratch/yifwang/new_fairness_x_explainability/new_debiased_models_jigsaw/distilbert_jigsaw_all" \
+    --batch_size=8 \
+    --max_seq_length=512 \
+    --learning_rate=2e-05 \
+    --warmup_steps_or_ratio=0.1 \
+    --num_train_epochs=5 \
+    --early_stopping_patience=-1 \
+    --eval_steps=1000 \
+    --save_steps=1000 \
+    --seed=42 \
+    --eval_metric="accuracy" \
+    --bias_type="race,gender,religion" \
+    --debiasing_method="group_class_balance" \
+    --total_num_examples=8000,8000,6300
+
+python -m model_selection.debiasing_preprocessing \
+    --model_name_or_path="distilbert/distilbert-base-uncased" \
+    --dataset_name="google/jigsaw_unintended_bias" \
+    --num_labels=2 \
+    --output_dir="/scratch/yifwang/new_fairness_x_explainability/new_debiased_models_jigsaw/distilbert_jigsaw_all" \
+    --batch_size=8 \
+    --max_seq_length=512 \
+    --learning_rate=2e-05 \
+    --warmup_steps_or_ratio=0.1 \
+    --num_train_epochs=5 \
+    --early_stopping_patience=-1 \
+    --eval_steps=1000 \
+    --save_steps=1000 \
+    --seed=42 \
+    --eval_metric="accuracy" \
+    --bias_type="race,gender,religion" \
+    --debiasing_method="cda" \
+    --total_num_examples=8000,8000,6300
+
+python -m model_selection.debiasing_inprocessing \
+    --model_name_or_path="distilbert/distilbert-base-uncased" \
+    --dataset_name="google/jigsaw_unintended_bias" \
+    --num_labels=2 \
+    --output_dir="/scratch/yifwang/new_fairness_x_explainability/new_debiased_models_jigsaw/distilbert_jigsaw_all" \
+    --batch_size=8 \
+    --max_seq_length=512 \
+    --learning_rate=2e-05 \
+    --warmup_steps_or_ratio=0.1 \
+    --num_train_epochs=5 \
+    --early_stopping_patience=-1 \
+    --eval_steps=1000 \
+    --save_steps=1000 \
+    --seed=42 \
+    --eval_metric="accuracy" \
+    --bias_type="race,gender,religion" \
+    --debiasing_method="dropout" \
+    --total_num_examples=8000,8000,6300\
+    --entropy_weight=0.1 \
+    --causal_debias_weight=0.5 \
+    --hidden_dropout_prob=0.2 \
+    --attention_dropout_prob=0.15 
+
+python -m model_selection.debiasing_inprocessing \
+    --model_name_or_path="distilbert/distilbert-base-uncased" \
+    --dataset_name="google/jigsaw_unintended_bias" \
+    --num_labels=2 \
+    --output_dir="/scratch/yifwang/new_fairness_x_explainability/new_debiased_models_jigsaw/distilbert_jigsaw_all" \
+    --batch_size=8 \
+    --max_seq_length=512 \
+    --learning_rate=2e-05 \
+    --warmup_steps_or_ratio=0.1 \
+    --num_train_epochs=5 \
+    --early_stopping_patience=-1 \
+    --eval_steps=1000 \
+    --save_steps=1000 \
+    --seed=42 \
+    --eval_metric="accuracy" \
+    --bias_type="race,gender,religion" \
+    --debiasing_method="attention_entropy" \
+    --total_num_examples=8000,8000,6300\
+    --entropy_weight=0.1 \
+    --causal_debias_weight=0.5 \
+    --hidden_dropout_prob=0.2 \
+    --attention_dropout_prob=0.15 
+
+python -m model_selection.debiasing_inprocessing \
+    --model_name_or_path="distilbert/distilbert-base-uncased" \
+    --dataset_name="google/jigsaw_unintended_bias" \
+    --num_labels=2 \
+    --output_dir="/scratch/yifwang/new_fairness_x_explainability/new_debiased_models_jigsaw/distilbert_jigsaw_all" \
+    --batch_size=8 \
+    --max_seq_length=512 \
+    --learning_rate=2e-05 \
+    --warmup_steps_or_ratio=0.1 \
+    --num_train_epochs=5 \
+    --early_stopping_patience=-1 \
+    --eval_steps=1000 \
+    --save_steps=1000 \
+    --seed=42 \
+    --eval_metric="accuracy" \
+    --bias_type="race,gender,religion" \
+    --debiasing_method="causal_debias" \
+    --total_num_examples=8000,8000,6300\
+    --entropy_weight=0.1 \
+    --causal_debias_weight=0.5 \
+    --hidden_dropout_prob=0.2 \
+    --attention_dropout_prob=0.15 
+

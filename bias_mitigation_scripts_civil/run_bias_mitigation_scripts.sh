@@ -1,0 +1,6 @@
+#!/bin/bash
+
+bash bias_mitigation_scripts_civil/bias_mitigation_race.sh
+bash bias_mitigation_scripts_civil/bias_mitigation_gender.sh
+bash bias_mitigation_scripts_civil/bias_mitigation_religion.sh
+bash bias_mitigation_scripts_civil/bias_mitigation_all.sh

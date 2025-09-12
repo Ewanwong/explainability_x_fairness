@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+bash decoder_scripts_civil/compute_sensitive_feature_reliance_race_test.sh
+bash decoder_scripts_civil/compute_sensitive_feature_reliance_religion_test.sh
+bash decoder_scripts_civil/compute_sensitive_feature_reliance_gender_test.sh

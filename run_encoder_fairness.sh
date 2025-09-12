@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+bash encoder_scripts/compute_fairness_race_test.sh
+bash encoder_scripts/compute_fairness_religion_test.sh
+bash encoder_scripts/compute_fairness_gender_test.sh
+
+bash encoder_scripts/compute_fairness_race_val.sh
+bash encoder_scripts/compute_fairness_religion_val.sh
+bash encoder_scripts/compute_fairness_gender_val.sh

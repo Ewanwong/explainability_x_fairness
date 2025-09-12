@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+bash encoder_scripts_jigsaw/compute_correlation_race_test.sh
+bash encoder_scripts_jigsaw/compute_correlation_religion_test.sh
+bash encoder_scripts_jigsaw/compute_correlation_gender_test.sh

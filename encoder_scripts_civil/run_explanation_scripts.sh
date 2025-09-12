@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+bash encoder_scripts_civil/generate_explanations_race_test.sh
+bash encoder_scripts_civil/generate_explanations_religion_test.sh
+bash encoder_scripts_civil/generate_explanations_gender_test.sh

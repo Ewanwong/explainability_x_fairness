@@ -1,0 +1,5 @@
+#!/bin/bash
+
+bash bias_mitigation_scripts_jigsaw/compute_fairness_race.sh
+bash bias_mitigation_scripts_jigsaw/compute_fairness_gender.sh
+bash bias_mitigation_scripts_jigsaw/compute_fairness_religion.sh
