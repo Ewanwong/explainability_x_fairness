@@ -641,27 +641,25 @@ class GradientNPropabationExplainer(BaseExplainer):
                         )
                     except RuntimeError as e:
                         if 'out of memory' in str(e):
-                            while n_steps > 0:
-                                n_steps -= 5
-                                try:
-                                    attributions = self.explainer.attribute(
-                                        inputs=(embeddings),
-                                        baselines=baselines,
-                                        target=explained_target_ids.squeeze(),
-                                        additional_forward_args=(attention_mask,),
-                                        n_steps=n_steps,
-                                    )
-                                    print(f"Warning: CUDA out of memory, reduce n_steps to {n_steps}")
-                                    break
-                                except RuntimeError as e:
-                                    if 'out of memory' in str(e):
-                                        continue
-                                    else:
-                                        raise e
+                            try:
+                                attributions = self.explainer.attribute(
+                                    inputs=(embeddings),
+                                    baselines=baselines,
+                                    target=explained_target_ids.squeeze(),
+                                    additional_forward_args=(attention_mask,),
+                                    n_steps=10,
+                                )
+                                print(f"Warning: CUDA out of memory, reduce n_steps to 10")
+                            except RuntimeError as e:
+                                
+                                print(f"Warning: {e}, return zero attributions")
+                                attributions = torch.ones_like(embeddings) * 1e-12
+                            
                         else:
                             # generate a attribution with all 1e-12
                             print(f"Warning: {e}, return zero attributions")
                             attributions = torch.ones_like(embeddings) * 1e-12
+                    
 
                 else:
                     attributions = self.explainer.attribute(
