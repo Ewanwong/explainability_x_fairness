@@ -654,7 +654,8 @@ class GradientNPropabationExplainer(BaseExplainer):
                     except RuntimeError as e:
                         # clear cache
                         empty_all_cuda_caches()
-                        if 'out of memory' in str(e):
+                        # match out of memory in lowercase message
+                        if 'out of memory' in str(e).lower():
                             try:
                                 attributions = self.explainer.attribute(
                                     inputs=(embeddings),
