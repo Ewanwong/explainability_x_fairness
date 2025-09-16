@@ -51,7 +51,19 @@ class GPTModelProbWrapper(torch.nn.Module):
         probabilities = torch.softmax(logits, dim=-1)
         return probabilities
     
-     
+def empty_all_cuda_caches(devices=None):
+    """
+    Empty the CUDA caching allocator on the given devices.
+    If devices is None, clear all visible CUDA devices.
+    """
+    if not torch.cuda.is_available():
+        return
+    if devices is None:
+        devices = range(torch.cuda.device_count())
+    for d in devices:
+        with torch.cuda.device(d):
+            torch.cuda.empty_cache()
+
 class BaseExplainer:
 
     def _explain(self):
@@ -640,6 +652,8 @@ class GradientNPropabationExplainer(BaseExplainer):
                             n_steps=n_steps,
                         )
                     except RuntimeError as e:
+                        # clear cache
+                        empty_all_cuda_caches()
                         if 'out of memory' in str(e):
                             try:
                                 attributions = self.explainer.attribute(
@@ -651,11 +665,14 @@ class GradientNPropabationExplainer(BaseExplainer):
                                 )
                                 print(f"Warning: CUDA out of memory, reduce n_steps to 10")
                             except RuntimeError as e:
-                                
+                                # clear cache
+                                empty_all_cuda_caches()
                                 print(f"Warning: {e}, return zero attributions")
                                 attributions = torch.ones_like(embeddings) * 1e-12
-                            
+                            empty_all_cuda_caches()
                         else:
+                            # clear cache   
+                            empty_all_cuda_caches()
                             # generate a attribution with all 1e-12
                             print(f"Warning: {e}, return zero attributions")
                             attributions = torch.ones_like(embeddings) * 1e-12
@@ -676,6 +693,8 @@ class GradientNPropabationExplainer(BaseExplainer):
                 )
     
             attributions_all = attributions
+            # clear cache
+            empty_all_cuda_caches()
 
 
             for i in range(batch_size):
