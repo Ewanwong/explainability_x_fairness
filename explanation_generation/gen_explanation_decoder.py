@@ -45,7 +45,9 @@ def main(args):
         print("Make sure the dataset is either civil comments or jigsaw. Default: civil comments")
 
     # Load the model
-    model = AutoModelForCausalLM.from_pretrained(args.model_dir, output_attentions=True, device_map="auto")
+    needs_attn = (args.methods is not None and "Attention" in args.methods) or args.methods is None
+    model = AutoModelForCausalLM.from_pretrained(args.model_dir, output_attentions=needs_attn, device_map="auto")
+    model.config.use_cache = False
     model.eval()
     #model.to(device)
 
@@ -86,6 +88,7 @@ def main(args):
     for method in attribution_methods:
         print(f"\nRunning {method} explainer...")
         if method == "IntegratedGradients":
+            model.config.use_cache = False
             model.gradient_checkpointing_enable()  # Enable gradient checkpointing for memory efficiency
             print("Gradient checkpointing enabled for IntegratedGradients.")
         else:
