@@ -1,4 +1,4 @@
-from explainer.Explainer_Decoder import BcosExplainer, AttentionExplainer, GradientNPropabationExplainer, OcclusionExplainer, ShapleyValueExplainer
+from explainer.Explainer_Decoder import BcosExplainer, AttentionExplainer, GradientNPropabationExplainer, OcclusionExplainer, ShapleyValueExplainer, ProgressiveInferenceExplainer
 from utils.utils import set_random_seed
 from utils.dataset_utils import customized_load_dataset, customized_split_dataset, load_subsets_for_fairness_explainability
 import argparse
@@ -28,6 +28,7 @@ EXPLANATION_METHODS_MAPPING = {
     #"ShapleyValue": ShapleyValueExplainer,
     "KernelShap": ShapleyValueExplainer,
     #"Lime": LimeExplainer,
+    "ProgressiveInference": ProgressiveInferenceExplainer,
 }
 
 def main(args):

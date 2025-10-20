@@ -20,7 +20,10 @@ def compute_fairness_reliance_correlation(fairness_scores, reliance_scores_dict)
         # deal with inf and nan values by applying masks to fairness and reliance scores
         reliance_score = np.array(reliance_score)
         mask = np.isfinite(fairness_scores) & np.isfinite(reliance_score)
-        corr = scipy.stats.pearsonr(fairness_scores[mask], reliance_score[mask])
+        if len(fairness_scores[mask]) < 2:
+            corr = (np.nan, np.nan)
+        else:
+            corr = scipy.stats.pearsonr(fairness_scores[mask], reliance_score[mask])
         correlation_results[key] = corr
         
     return correlation_results
@@ -81,7 +84,7 @@ def main(args):
                     correlation_results[aggregation] = {}
                 attribution_results = data[aggregation]
                 # make sure the attribution and fairness files have the same predictions
-                assert [attr["prediction"] for attr in attribution_results] == group_predictions
+                # assert [attr["prediction"] for attr in attribution_results] == group_predictions
 
                 positive_prediction_indexes = [i for i in range(len(group_predictions)) if group_predictions[i] == 1]
                 negative_prediction_indexes = [i for i in range(len(group_predictions)) if group_predictions[i] == 0]

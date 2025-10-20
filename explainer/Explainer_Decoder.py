@@ -1245,3 +1245,162 @@ class ShapleyValueExplainer(BaseExplainer):
     def explain(self, prompts, labels, targets, raw_inputs, example_indices):
         return self.explain_tokens(prompts=prompts, labels=labels, targets=targets, raw_inputs=raw_inputs,
                                    example_indices=example_indices)
+
+class ProgressiveInferenceExplainer(BaseExplainer):
+    def __init__(self, model, tokenizer, method='ProgressiveInference', baseline='pad'):
+        self.model = model
+        self.model.eval()
+        self.tokenizer = tokenizer
+        # Occlusion parameters
+        self.sliding_window_size = (1,)  # Occlude one token at a time
+        if baseline == 'zero':
+            self.baseline = None
+        elif baseline == 'mask':
+            self.baseline = self.tokenizer.mask_token_id
+        elif baseline == 'pad':
+            self.baseline = self.tokenizer.pad_token_id
+        else:
+            raise ValueError(f"Invalid baseline {baseline}")
+
+        self.positive_token = "Yes"
+        self.negative_token = "No"
+        self.positive_token_id = self.tokenizer(self.positive_token, add_special_tokens=False)["input_ids"][0]
+        self.negative_token_id = self.tokenizer(self.negative_token, add_special_tokens=False)["input_ids"][0]
+
+        self.stride = (1,)
+        self.device = model.model.get_input_embeddings().weight.device
+
+    def _explain(self, input_ids, attention_mask, labels=None, target_ids=None, raw_input_ids=None,
+                 example_indices=None):
+
+        batch_size = input_ids.shape[0]
+        assert batch_size == 1, "Batch size must be 1 for now"
+
+        # Get the model's predictions
+        with torch.no_grad():
+            outputs = self.model(input_ids=input_ids, attention_mask=attention_mask)
+        logits = outputs.logits[:, -1, :]  # shape: [batch_size, vocab_size]
+        all_logits = outputs.logits  # shape: [batch_size, seq_len, vocab_size]
+        all_probs = torch.softmax(all_logits, dim=-1)
+        probabilities = torch.softmax(logits, dim=-1)
+        positive_prediction_probabilities = probabilities[:, self.positive_token_id]
+        negative_prediction_probabilities = probabilities[:, self.negative_token_id]
+        # get the predicted ids
+        predicted_ids = torch.where(positive_prediction_probabilities > negative_prediction_probabilities,
+                                    self.positive_token_id, self.negative_token_id).unsqueeze(1)
+
+        if target_ids is None:
+            target_ids = predicted_ids
+        # get the probability of the target token
+        all_target_probs = all_probs[:, :, target_ids.squeeze(1)].squeeze(-1)  # shape: [batch_size, seq_len]
+        prediction_probabilities = probabilities[torch.arange(probabilities.shape[0]), predicted_ids].unsqueeze(
+            1)  # shape: [batch_size, 1]
+
+        all_pi_results = [[] for _ in range(batch_size)]
+
+        if raw_input_ids is not None:
+            # find the index of the raw_input_ids in the input_ids
+            def find_sublist_indexes(full, sub):
+                n, m = len(full), len(sub)
+                for i in range(n - m + 1):
+                    if full[i:i + m] == sub:
+                        return list(range(i, i + m))
+                return []
+
+            raw_input_indexes_list = [find_sublist_indexes(input_ids[i].detach().cpu().float().numpy().tolist(),
+                                                           raw_input_ids[i].detach().cpu().float().numpy().tolist()) for
+                                      i in range(batch_size)]
+            if any(len(indexes) == 0 for indexes in raw_input_indexes_list):
+                print(f"Warning: raw_input_ids not found in input_ids for some examples, returning the original input")
+                raw_input_ids = None
+            if raw_input_ids is not None:
+                feature_masks = torch.zeros(input_ids.shape, device=self.device, dtype=torch.int32)
+                for i in range(batch_size):
+                    for j, raw_input_pos in enumerate(raw_input_indexes_list[i]):
+                        feature_masks[i, raw_input_pos] = j + 1
+            else:
+                feature_masks = None
+        else:
+            feature_masks = None
+
+        for explained_target_ids in target_ids:
+            explained_target_ids = explained_target_ids.unsqueeze(0)
+            target_probabilities = probabilities[torch.arange(probabilities.shape[0]), explained_target_ids].unsqueeze(
+                1)
+
+            # compute attributions as difference between adjacent positions in all_probs
+            # add a 0.5 vector at the beginning for the first token
+            all_target_probs_shifted = torch.cat([torch.zeros((all_target_probs.shape[0], 1), device=all_target_probs.device), all_target_probs[:, :-1]], dim=1)
+            attributions = all_target_probs - all_target_probs_shifted
+     
+
+            for i in range(batch_size):
+                true_label = labels[i] if labels is not None else None
+                if raw_input_ids is not None:
+                    raw_input_indexes = raw_input_indexes_list[i]
+                tokens = self.tokenizer.convert_ids_to_tokens(input_ids[i].detach().cpu().float().numpy().tolist())
+                if raw_input_ids is not None:
+                    raw_tokens = self.tokenizer.convert_ids_to_tokens(
+                        raw_input_ids[i].detach().cpu().float().numpy().tolist())
+                target_token = \
+                self.tokenizer.convert_ids_to_tokens(explained_target_ids[i].detach().cpu().float().numpy().tolist())[0]
+                prediction_token = \
+                self.tokenizer.convert_ids_to_tokens(predicted_ids[i].detach().cpu().float().numpy().tolist())[0]
+                if prediction_token == "Yes":
+                    predicted_class = 1
+                elif prediction_token == "No":
+                    predicted_class = 0
+                else:
+                    raise ValueError(f"Warning: predicted class {prediction_token} is not Yes or No")
+                if target_token == "Yes":
+                    target_class = 1
+                elif target_token == "No":
+                    target_class = 0
+                else:
+                    print(f"Warning: target class {target_token} is not Yes or No")
+                    target_class = target_token
+                attributions_i = attributions.detach().cpu().float().numpy()[i]  # Shape: [seq_len]
+                # skip padding tokens
+                # # tokens = [token for token in tokens if token != self.tokenizer.pad_token]
+                if raw_input_ids is not None:
+                    raw_token_attributions_i = [attributions_i.tolist()[raw_input_index] for raw_input_index in
+                                                raw_input_indexes]
+                    raw_tokens = [token for token in raw_tokens if token != self.tokenizer.pad_token]
+                real_length = len(tokens)
+                # Collect results for the current example and class
+
+                if raw_input_ids is not None:
+                    result = {
+                        'index': example_indices[i],
+                        'text': self.tokenizer.decode([t for t in raw_input_ids[i] if not (
+                                    t in self.tokenizer.all_special_ids and t != self.tokenizer.unk_token_id)],
+                                                      skip_special_tokens=False),
+                        'true_label': true_label,
+                        'predicted_class': predicted_class,
+                        'predicted_class_confidence': prediction_probabilities[i].item(),
+                        'target_class': target_class,
+                        'target_class_confidence': target_probabilities[i].item(),
+                        'method': 'ProgressiveInference',
+                        'attribution': list(zip(raw_tokens, raw_token_attributions_i)),
+                    }
+                    all_pi_results[i].append(result)
+                else:
+                    result = {
+                        'index': example_indices[i],
+                        'text': self.tokenizer.decode([t for t in input_ids[i] if not (
+                                    t in self.tokenizer.all_special_ids and t != self.tokenizer.unk_token_id)],
+                                                      skip_special_tokens=False),
+                        'true_label': true_label,
+                        'predicted_class': predicted_class,
+                        'predicted_class_confidence': prediction_probabilities[i].item(),
+                        'target_class': target_class,
+                        'target_class_confidence': target_probabilities[i].item(),
+                        'method': 'ProgressiveInference',
+                        'attribution': list(zip(tokens, attributions_i.tolist()[:real_length])),
+                    }
+                    all_pi_results[i].append(result)
+        return {"ProgressiveInference": all_pi_results}
+
+    def explain(self, prompts, labels, targets, raw_inputs, example_indices):
+        return self.explain_tokens(prompts=prompts, labels=labels, targets=targets, raw_inputs=raw_inputs,
+                                   example_indices=example_indices)

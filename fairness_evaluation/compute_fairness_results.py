@@ -36,7 +36,7 @@ def make_predictions(model, tokenizer, batch, model_type, template, prompt):
         inputs = tokenizer(text, return_tensors='pt')
         device = model.get_input_embeddings().weight.device
         inputs = {k: v.to(device) for k, v in inputs.items()}
-        labels = batch['label'].numpy()
+        labels = batch['label'].numpy() if type(batch['label']) is not list else batch['label']
         with torch.no_grad():
             outputs = model(**inputs)
             logits = outputs.logits[:, -1, :]

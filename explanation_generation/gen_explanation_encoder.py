@@ -27,6 +27,7 @@ EXPLANATION_METHODS_MAPPING = {
     #"ShapleyValue": ShapleyValueExplainer,
     "KernelShap": ShapleyValueExplainer,
     #"Lime": LimeExplainer,
+    "DecompX": None,  # DecompX has its own implementation
 }
 
 def main(args):
@@ -65,6 +66,8 @@ def main(args):
         os.makedirs(output_dir)
 
     for method in attribution_methods:
+        if method == "DecompX":
+            continue  # Skip DecompX here, handle it separately
         print(f"\nRunning {method} explainer...")
         if EXPLANATION_METHODS_MAPPING[method] == BcosExplainer:
             explainer = BcosExplainer(model, tokenizer)
@@ -92,7 +95,138 @@ def main(args):
             with open(output_file, 'w') as f:
                 json.dump(result, f, indent=4)
             print(f"\nAttribution results saved to {output_file}")
-    
+
+    if "DecompX" in attribution_methods:
+        # delete the model to free up memory
+        del model
+        torch.cuda.empty_cache()
+        print("\nRunning DecompX explainer...")
+        from DecompX.src.decompx_utils import DecompXConfig
+        from DecompX.src.modeling_bert import BertForSequenceClassification
+        from DecompX.src.modeling_roberta import RobertaForSequenceClassification
+
+        CONFIGS = {
+            "DecompX":
+                DecompXConfig(
+                    include_biases=True,
+                    bias_decomp_type="absdot",
+                    include_LN1=True,
+                    include_FFN=True,
+                    FFN_approx_type="GeLU_ZO",
+                    include_LN2=True,
+                    aggregation="vector",
+                    include_classifier_w_pooler=True,
+                    tanh_approx_type="ZO",
+                    output_all_layers=True,
+                    output_attention=None,
+                    output_res1=None,
+                    output_LN1=None,
+                    output_FFN=None,
+                    output_res2=None,
+                    output_encoder=None,
+                    output_aggregated="norm",
+                    output_pooler="norm",
+                    output_classifier=True,
+                ),
+        }
+
+        def batch_loader(dataset, batch_size, shuffle=False):
+            if type(dataset) == dict:
+                # get the length of the dataset
+                length = len(dataset[list(dataset.keys())[0]])
+                indices = list(range(length))
+                if shuffle:
+                    random.shuffle(indices)
+                for i in range(0, length, batch_size):
+                    batch_indices = indices[i:i+batch_size]
+                    batch = {key: [dataset[key][j] for j in batch_indices] for key in dataset.keys()}
+                    yield batch
+            elif type(dataset) == list:
+                length = len(dataset)
+                indices = list(range(length))
+                if shuffle:
+                    random.shuffle(indices)
+                for i in range(0, length, batch_size):
+                    batch_indices = indices[i:i+batch_size]
+                    batch = [dataset[j] for j in batch_indices]
+                    yield batch
+        
+        MODEL = args.model_dir  # Only BERT or RoBERTa
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        if "roberta" in MODEL:
+            model = RobertaForSequenceClassification.from_pretrained(MODEL).to(device)
+        elif "bert" in MODEL:
+            model = BertForSequenceClassification.from_pretrained(MODEL).to(device)
+        else:
+            raise Exception(f"Not implented model: {MODEL}")
+        
+        output_dir = os.path.join(args.output_dir, "explanations")
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
+
+        for group in target_datasets.keys():
+            target_dataset = target_datasets[group].to_dict()
+            target_dataset['index'] = list(range(len(target_dataset['text'])))
+            test_dataloader = batch_loader(target_dataset, args.batch_size, shuffle=False)
+            decompx_results = []
+
+            for batch in tqdm(test_dataloader):
+                texts = batch['text']
+                example_indices = batch['index']
+                labels = batch['label']
+
+                batch_size = len(texts)
+            
+                tokenized_sentence = tokenizer(texts, return_tensors="pt", padding=True, truncation=True, max_length=args.max_length)
+                tokenized_sentence = {k: v.to(device) for k, v in tokenized_sentence.items()}
+                real_lengths = tokenized_sentence['attention_mask'].sum(dim=-1)
+
+
+                with torch.no_grad():
+                    model.eval()
+                    logits, hidden_states, decompx_last_layer_outputs, decompx_all_layers_outputs = model(
+                        **tokenized_sentence, 
+                        output_attentions=False, 
+                        return_dict=False, 
+                        output_hidden_states=True, 
+                        decompx_config=CONFIGS["DecompX"]
+                    )
+
+                predicted_classes = logits.argmax(dim=-1)
+                predicted_confidence = torch.softmax(logits, dim=-1).max(dim=-1).values
+
+                importance = np.array([g.squeeze().cpu().detach().numpy() for g in decompx_last_layer_outputs.classifier]).squeeze()  # (batch, seq_len, classes)
+                if importance.ndim == 2:
+                    importance = importance[np.newaxis, :]
+                importance = [importance[j][:real_lengths[j], :] for j in range(len(importance))]
+                #decompx_outputs["importance_last_layer_classifier"] = importance
+
+                for i in range(batch_size):
+                    tokens = tokenizer.convert_ids_to_tokens(tokenized_sentence["input_ids"][i][:real_lengths[i]])
+                    decompx_results.append(
+                        [
+                            {
+                                "index": example_indices[i],
+                                "text": tokenizer.decode([t for t in tokenized_sentence["input_ids"][i][:real_lengths[i]] if not (t in tokenizer.all_special_ids and t != tokenizer.unk_token_id)], skip_special_tokens=False),
+                                "true_label": labels[i],
+                                "predicted_class": predicted_classes[i].item(),
+                                "predicted_class_confidence": predicted_confidence[i].item(),
+                                "target_class": predicted_classes[i].item(),
+                                "target_class_confidence": predicted_confidence[i].item(),
+                                "method": "DecompX",
+                                "attribution": list(zip(tokens, importance[i][:, predicted_classes[i].item()].tolist())),
+                            }
+                        ]
+                    )
+
+            decompx_results = {"DecompX": decompx_results}
+
+            # Save the results to a JSON file
+            output_file = os.path.join(output_dir, f'DecompX_{group}_{args.split}_explanations.json')
+            with open(output_file, 'w') as f:
+                json.dump(decompx_results, f, indent=4)
+            print(f"\nAttribution results saved to {output_file}")
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='BERT Attribution with Captum')

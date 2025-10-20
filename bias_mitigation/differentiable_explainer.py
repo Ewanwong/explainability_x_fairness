@@ -359,7 +359,8 @@ def deeplift_attr(model, input_ids, attention_mask, token_type_ids, position_ids
     # DeepLIFT is a method that requires a baseline input and is not easily differentiable.
     # This is a placeholder for the actual implementation.
     # In practice, you would use a library like `deeplift` to compute DeepLIFT.
-    raise NotImplementedError("DeepLIFT is not implemented in this example.")
+    raise NotImplementedError("DeepLift is not implemented in this example.")
+
 
 def kernel_shap_attr(model, embeddings, attention_mask, sensitive_token_mask, target_classes=None, num_samples=100):
     # Kernel SHAP is a complex method that requires sampling and is not easily differentiable.

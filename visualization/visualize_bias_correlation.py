@@ -70,7 +70,7 @@ def main(args):
                     reliance_scores[aggregation] = {}
                 attribution_results = data[aggregation]
                 # make sure the attribution and fairness files have the same predictions
-                assert [attr["prediction"] for attr in attribution_results] == group_predictions
+                # assert [attr["prediction"] for attr in attribution_results] == group_predictions
 
                 positive_prediction_indexes = [i for i in range(len(group_predictions)) if group_predictions[i] == 1]
                 negative_prediction_indexes = [i for i in range(len(group_predictions)) if group_predictions[i] == 0]

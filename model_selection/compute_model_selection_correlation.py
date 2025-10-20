@@ -346,7 +346,7 @@ if __name__ == "__main__":
     parser.add_argument('--experiment_type', type=str, default='encoder', choices=['encoder', 'decoder'], help='Type of model to use')
     parser.add_argument('--methods', type=str, default=None, help='List of attribution methods to use separated by commas')
     parser.add_argument('--bias_type', type=str, default="race", choices=["race", "gender", "religion"])
-    parser.add_argument("--model_type", type=str, default="bert", choices=["bert", "roberta", "distilbert", "llama", "qwen"], help="Type of model to use")
+    parser.add_argument("--model_type", type=str, default="bert", choices=["bert", "roberta", "distilbert", "llama_3b", "qwen_3b", "qwen3_4b"], help="Type of model to use")
     parser.add_argument("--num_val_examples", type=int, default=-1, help="Number of examples to use for validation")
     parser.add_argument("--num_test_examples", type=int, default=-1, help="Number of examples to use for testing")
     parser.add_argument("--test_seed", type=int, default=-1, help="Seed for test set shuffling")
